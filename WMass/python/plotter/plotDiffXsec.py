@@ -10,14 +10,15 @@ combineElePt01asBkg = 0
 dryrun = 0
 skipPreliminary = True # passed as an option to some scripts to print "Preliminary" in plot
 skipData = 0
-onlyData = 1
+onlyData = 0
 corrXsecStat = 1 # default should be 1, i.e. combinetf had option correlate-xsec-stat, else 0
 
 skipInclusivePlot = 1
 skipPlot = 1
 skipTemplate = 1
 skipDiffNuis = 1  
-skipDiffNuis4HEPdata = 1  # will use HEPDATA format for labels
+skipDiffNuis4HEPdata = 0  # will use HEPDATA format for labels
+skipDiffNuis4HEPdataAsCovMatrix = 1  # will use HEPDATA format for labels, and same sorting as for covariance matrices (this only runs on data, and make a list for each covariance matrix, with POIs and nuisances)
 skipPostfit = 1  # only for Data
 skipCorr = 1
 skipCorr1D = 1
@@ -139,6 +140,15 @@ diffNuisances_pois = [#"pdf.*|alphaS",
                       ##"Wminus.*_ieta_.*_mu",
                       allSystNuisances, 
                       ]
+
+poiPostfixes_4diffNuisances = ["pmaskedexp",
+                               "pmaskedexpnorm",
+                               "sumxsec",
+                               "sumxsecnorm",
+                               "chargeasym",
+                               "chargemetaasym",
+                               "ratiometaratio"
+                           ] # used for list of nuisances and pois following covariance matrices for HEPData
 
 # this is appended to nuis below
 #correlationSigRegexp = {"Wplus_ieta6ipt6" : ".*Wplus.*_ieta_6_ipt_6_.*mu"  
@@ -340,7 +350,7 @@ for fit in fits:
 
     print ""
     print "="*30
-    print "POSTFIT NUISANCES"
+    print "POSTFIT NUISANCES FOR HEPDATA"
     print ""
 
     ## POSTFIT NUISANCES
@@ -357,6 +367,27 @@ for fit in fits:
             if not dryrun:
                 os.system(tmpcommand)
 
+
+    print ""
+    print "="*30
+    print "POSTFIT NUISANCES FOR HEPDATA AS COVARIANCE MATRICES"
+    print ""
+
+    ## POSTFIT NUISANCES
+    command = "python w-helicity-13TeV/diffNuisances.py"
+    command += " --infile cards/{fd}/fit/{typedir}/fitresults_{s}_{fit}_{pf}.root".format(fd=folder,typedir=typedir,s=seed,fit=fit,pf=postfix)
+    command += " --outdir plots/diffXsecAnalysis_new/{lep}/{fd}/diffNuisancesHEPDATA_asCovMatrices/{pf}/".format(lep=lepton,fd=folder, pf=postfix)
+    command += " -a --format html --type hessian  --suffix  {fit} ".format(fit=fit)
+    command += " --etaptbinfile cards/{fd}/binningPtEta.txt --use-hepdata-labels -c {fl} ".format(fd=folder, fl=flavour)
+    command += " --prepare-as-covariance-matrix --divide-covariance-by-bin-area " 
+    for poi in diffNuisances_pois:
+        for poiPF in poiPostfixes_4diffNuisances:
+            tmpcommand = command + " --pois '{poi}|.*{poipf}' --poi-postfix '{poipf}' --uniqueString 'allNuisancesAndPOIs_{poipf}' ".format(poi=poi,poipf=poiPF) 
+            if not skipDiffNuis4HEPdataAsCovMatrix and fit == "Data":
+                print ""    
+                print tmpcommand
+                if not dryrun:
+                    os.system(tmpcommand)
 
     print ""
     print "="*30

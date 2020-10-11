@@ -222,10 +222,13 @@ def niceName(name,genBins="",forceLep="",drawRangeInLabel=False):
     else:  
         return name
 
-def niceNameHEPDATA(name,genBins="",forceLep="",drawRangeInLabel=False, isHelicity=False):
+def niceNameHEPDATA(name,genBins="",forceLep="",drawRangeInLabel=False, isHelicity=False, poiType="POI"):
 
     # try a simple but understandable form
     # use plain latex and not tlatex for math symbols: i.e. $\mu$ instead of #mu
+
+    # for now hardcoded, might use the binning to get range
+    fiducialRange = "$|\eta^{l}|$-$p_{T}^{l} \in$ [0.0,2.4]-[26,56]"
 
     if re.match("W.*sumxsec",name) and all(x not in name for x in ["_Ybin", "_ieta_", "_ipt_"]):
         # inclusive xsec poi
@@ -233,21 +236,21 @@ def niceNameHEPDATA(name,genBins="",forceLep="",drawRangeInLabel=False, isHelici
         if forceLep: nn = '\mu' if forceLep == "mu" else 'e' if forceLep == "el" else 'l'
         chs = "+" if "plus" in name else "-" if "minus" in name else ""
         if chs == "":
-            return "$W\\rightarrow {l}\\nu$ fiducial".format(l=nn)
+            return "fiducial cross section, $W\\rightarrow {l}\\nu$, {fr}".format(fr=fiducialRange,l=nn)
         else:
-            return "$W^{{{ch}}}\\rightarrow {l}\\nu$ fiducial".format(ch=chs,l=nn)
+            return "fiducial cross section, $W^{{{ch}}}\\rightarrow {l}\\nu$, {fr}".format(fr=fiducialRange,ch=chs,l=nn)
 
     if re.match("Wasym.*chargemetaasym",name) and all(x not in name for x in ["_Ybin", "_ieta_", "_ipt_"]):
         # inclusive xsec poi
         nn  = '\mu' if '_mu_' in name else 'el' if '_el_' in name else 'l'
         if forceLep: nn = '\mu' if forceLep == "mu" else 'e' if forceLep == "el" else 'l'
-        return "$W\\rightarrow {l}\\nu$ (asymmetry) fiducial".format(l=nn)
+        return "fiducial charge asymmetry, $W\\rightarrow {l}\\nu$, {fr}".format(fr=fiducialRange,l=nn)
 
     if re.match("Wratio.*ratiometaratio",name) and all(x not in name for x in ["_Ybin", "_ieta_", "_ipt_"]):
         # inclusive xsec poi
         #nn  = '\mu' if '_mu_' in name else 'el' if '_el_' in name else 'l'
         #if forceLep: nn = '\mu' if forceLep == "mu" else 'e' if forceLep == "el" else 'l'
-        return "$W^{+}$/$W^{-}$ fiducial"
+        return "fiducial cross section ratio, $W^{+}$/$W^{-}$ %s" % fiducialRange 
 
 
     if '_Ybin' in name:
@@ -276,6 +279,9 @@ def niceNameHEPDATA(name,genBins="",forceLep="",drawRangeInLabel=False, isHelici
             
             if name.startswith("norm_"):  # normalization systematics for bins not fitted as pois
                 nn = "norm.syst. " + nn
+            else:
+                nn = poiType + ", " + nn
+
         else:
             nn  = '#mu: ' if '_mu_' in name else 'el: ' if '_el_' in name else ''
             if 'plus' in name: nn += 'W+ '
@@ -306,7 +312,7 @@ def niceNameHEPDATA(name,genBins="",forceLep="",drawRangeInLabel=False, isHelici
             lep = '\mu' if '_mu_' in name else 'el' if '_el_' in name else 'l'
             if forceLep: lep = '\mu' if forceLep == "mu" else 'e' if forceLep == "el" else 'l'
             #nn = "{wch}#rightarrow{lep}#nu: |#eta|-p_{{T}} #in [{etal:1.1f},{etah:1.1f}]-[{ptl:3g},{pth:3g}]".format(wch=wch,lep=lep,etal=etal,etah=etah,ptl=ptl,pth=pth)
-            nn = "${wch}$, $|\eta|$-$p_{{T}} \in$ [{etal:1.1f},{etah:1.1f}]-[{ptl:3g},{pth:3g}]".format(wch=wch,etal=etal,etah=etah,ptl=ptl,pth=pth)
+            nn = "{poi}, ${wch}$, $|\eta|$-$p_{{T}} \in$ [{etal:1.1f},{etah:1.1f}]-[{ptl:3g},{pth:3g}]".format(poi=poiType,wch=wch,etal=etal,etah=etah,ptl=ptl,pth=pth)
         else:
             nn  = '#mu: ' if '_mu_' in name else 'el: ' if '_el_' in name else ''
             nn += 'W+ ' if 'plus' in name else 'W- ' if 'minus' in name else 'W '
@@ -328,7 +334,7 @@ def niceNameHEPDATA(name,genBins="",forceLep="",drawRangeInLabel=False, isHelici
             wch = 'W^{+}' if 'plus' in name else 'W^{-}' if 'minus' in name else 'W'
             lep = '\mu' if '_mu_' in name else 'el' if '_el_' in name else 'l'
             if forceLep: lep = '\mu' if forceLep == "mu" else 'e' if forceLep == "el" else 'l'
-            nn = "${wch}$, $|\eta^{{{lep}}}| \in$ [{etal:1.1f},{etah:1.1f}]".format(wch=wch,lep=lep,etal=etal,etah=etah)
+            nn = "{poi}, ${wch}$, $|\eta^{{{lep}}}| \in$ [{etal:1.1f},{etah:1.1f}]".format(poi=poiType,wch=wch,lep=lep,etal=etal,etah=etah)
         else:
             nn  = '#mu: ' if '_mu_' in name else 'el: ' if '_el_' in name else ''
             nn += 'W+ ' if 'plus' in name else 'W- ' if 'minus' in name else 'W '            
@@ -351,7 +357,7 @@ def niceNameHEPDATA(name,genBins="",forceLep="",drawRangeInLabel=False, isHelici
             wch = 'W^{+}' if 'plus' in name else 'W^{-}' if 'minus' in name else 'W'
             lep = '\mu' if '_mu_' in name else 'el' if '_el_' in name else 'l'
             if forceLep: lep = '\mu' if forceLep == "mu" else 'e' if forceLep == "el" else 'l'
-            nn = "${wch}$, $p_{{T}}^{{{lep}}} \in$ [{ptl:3g},{pth:3g}]".format(wch=wch,lep=lep,ptl=ptl,pth=pth)
+            nn = "{poi}, ${wch}$, $p_{{T}}^{{{lep}}} \in$ [{ptl:3g},{pth:3g}]".format(poi=poiType,wch=wch,lep=lep,ptl=ptl,pth=pth)
         else:
             nn  = '#mu: ' if '_mu_' in name else 'el: ' if '_el_' in name else ''
             nn += 'W+ ' if 'plus' in name else 'W- ' if 'minus' in name else 'W '
@@ -488,7 +494,7 @@ def niceNameHEPDATA(name,genBins="",forceLep="",drawRangeInLabel=False, isHelici
         return "eff.syst., ${l}<|\eta|<{h}$, ${lep}$".format(lep="\mu" if "mu" in name else "e",l=low,h=high)
 
     elif "fsr" in name:
-        return "{lep} QED final state radiation".format(lep="muon" if "Mu" in name else "electron")
+        return "QED final state radiation, ${lep}$".format(lep="\mu" if any(x in name for x in ["Mu", "mu"]) else "e")
 
     elif name == "mW":
         return "$m_W$"
@@ -722,6 +728,7 @@ if __name__ == "__main__":
                                     #"channelpolpois"        : "unpolarizedxsec", 
                                     "channelnone"           : "pmaskedexp" # dummy, there are no POIs in this case
     }
+
     poiPostfix = filter_matrixType_poiPostfix[options.matrixType]
     poiHasToBeScaled = True if poiPostfix in ["pmaskedexp", "sumxsec"] else False
     ## construct the covariances and the correlations in one go.
@@ -729,9 +736,11 @@ if __name__ == "__main__":
     # also normalize by bin area the  numbers for absolute and normalized cross section (as it is done on the plots)
     # the yields/pb scale factor is 35900 for 2D xsec, and 36000 for helicity
     # this is because the yields for helicity were made using 36/fb
-    scalefactor_poi = 1./(36000.0 if options.ywbinfile else 35900.0)
-    if options.channel == "lep":
-        scalefactor_poi /= 2.            
+    scalefactor_poi = 1.0
+    if poiHasToBeScaled:
+        scalefactor_poi = 1./(36000.0 if options.ywbinfile else 35900.0)
+        if options.channel == "lep":
+            scalefactor_poi /= 2.            
 
     #######
     # NOTE 
@@ -766,15 +775,14 @@ if __name__ == "__main__":
                         scalefactor /= getBinAreaFromParamName(p1,genBins,isHelicity=True)
                     if "_Ybin_" in p2:
                         scalefactor /= getBinAreaFromParamName(p2,genBins,isHelicity=True)
-                if poiHasToBeScaled:
-                    if p1.endswith(poiPostfix):     
-                        scalefactor *= scalefactor_poi
-                        if poiPostfix == "a4" and "Wplus_Ybin_" in p1:
-                            scalefactorSignA4wplus *= -1.0 # see previous comment on A4 for W+
+                if p1.endswith(poiPostfix):     
+                    scalefactor *= scalefactor_poi
+                    if poiPostfix == "a4" and "Wplus_Ybin_" in p1:
+                        scalefactorSignA4wplus *= -1.0 # see previous comment on A4 for W+
                 if p2.endswith(poiPostfix):     
-                        scalefactor *= scalefactor_poi
-                        if poiPostfix == "a4" and "Wplus_Ybin_" in p2:
-                            scalefactorSignA4wplus *= -1.0 # see previous comment on A4 for W+
+                    scalefactor *= scalefactor_poi
+                    if poiPostfix == "a4" and "Wplus_Ybin_" in p2:
+                        scalefactorSignA4wplus *= -1.0 # see previous comment on A4 for W+
                 cov [(p1,p2)] = scalefactorSignA4wplus * scalefactor * covmatrix .GetBinContent(indices[ip1],indices[ip2])
                 corr[(p1,p2)] = scalefactorSignA4wplus * corrmatrix.GetBinContent(indices[ip1],indices[ip2])
         
@@ -787,7 +795,7 @@ if __name__ == "__main__":
     # to help sorting with helicity
     # if using more helicity and Y bins, sort by hel,Ybin
     helSorted = { "left" : 1, "right" : 2, "long" : 3, "Ybin" : 4} # Ybin appears for unpolarized quantities
-    chargeSorted = { "Wplus" : 1, "Wminus" : 2}
+    chargeSorted = { "W" : 0, "Wplus" : 1, "Wminus" : 2}
     lepSorted = { "mu" : 1, "el" : 2}
 
     ## sort the floatParams. alphabetically, except for pdfs, which are sorted by number
@@ -799,17 +807,18 @@ if __name__ == "__main__":
     #params = sorted(params, key= lambda x: (int(chargeSorted[x.split('_')[0]]),int(helSorted[x.split('_')[1]]),int(x.split('_')[-1])) if '_Ybin_' in x else 0)
     # one might want to invert the order of charge and helicity for the sorting
 
-    params = sorted(params, key = lambda x: 0 if "plus" in x else 1 if "minus" in x else 2)
+    params = sorted(params)
+    #params = sorted(params, key = lambda x: 0 if "plus" in x else 1 if "minus" in x else 2)
     if options.ywbinfile:
-        params = sorted(params, key= lambda x: utilities.getNFromString(x) if '_Ybin_' in x else 0)
-        params = sorted(params, key= lambda x: (1 if "left" in x else 2 if "right" in x else "3") if '_Ybin_' in x else 0)
-        params = sorted(params, key= lambda x: (int(chargeSorted[x.split('_')[0]]),int(helSorted[x.split('_')[1]]),int(x.split('_')[-2])) if ('_Ybin_' in x and "norm_" not in x) else 0)
+        params = sorted(params, key= lambda x: utilities.getNFromString(x) if '_Ybin_' in x else -1)
+        params = sorted(params, key= lambda x: (1 if "left" in x else 2 if "right" in x else "3") if '_Ybin_' in x else -1)
+        params = sorted(params, key= lambda x: (int(chargeSorted[x.split('_')[0]]),int(helSorted[x.split('_')[1]]),int(x.split('_')[-2])) if ('_Ybin_' in x and "norm_" not in x) else -1)
     else:
-        params = sorted(params, key= lambda x: get_ieta_from_process_name(x) if ('_ieta_' in x) else 0)
-        params = sorted(params, key= lambda x: get_ipt_from_process_name(x) if ('_ipt_' in x) else 0)
-        params = sorted(params, key= lambda x: get_ieta_ipt_from_process_name(x) if ('_ieta_' in x and '_ipt_' in x) else 0)
+        params = sorted(params, key= lambda x: get_ieta_from_process_name(x) if ('_ieta_' in x) else -1)
+        params = sorted(params, key= lambda x: get_ipt_from_process_name(x) if ('_ipt_' in x) else -1)
+        params = sorted(params, key= lambda x: get_ieta_ipt_from_process_name(x) if ('_ieta_' in x and '_ipt_' in x) else -1)
     params = sorted(params, key= lambda x: 1 if x.endswith(poiPostfix) else 0)
- 
+
     # sort if not using all params (otherwise the order should be already ok, as it is taken from the original matrix)
     if not options.showAllNuisances:
 

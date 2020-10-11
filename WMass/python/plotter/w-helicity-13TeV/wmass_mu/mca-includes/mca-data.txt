@@ -9,3 +9,4 @@
 # data_G: SingleMuon_Run2016G_part*
 # data_H: SingleMuon_Run2016H_part*
 data: SingleMuon_Run2016*
+#data: SingleMuon_Run2016B_part1
